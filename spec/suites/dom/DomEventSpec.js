@@ -61,6 +61,45 @@ describe('DomEvent', function () {
 			expect(listener.notCalled).to.be.ok();
 		});
 
+		it('only removes the specified listener', function () {
+			var listenerA = sinon.spy(),
+			listenerB = sinon.spy();
+
+			L.DomEvent.on(el, 'click', listenerA);
+			L.DomEvent.on(el, 'click', listenerB);
+			L.DomEvent.off(el, 'click', listenerA);
+
+			happen.click(el);
+
+			expect(listenerA.called).to.not.be.ok();
+			expect(listenerB.called).to.be.ok();
+		});
+
+		it('removes all listeners when only passed the HTMLElement', function () {
+			var listenerA = sinon.spy(),
+			listenerB = sinon.spy();
+
+			L.DomEvent.on(el, 'click', listenerA);
+			L.DomEvent.on(el, 'click', listenerB, {});
+			L.DomEvent.off(el);
+
+			happen.click(el);
+
+			expect(listenerA.called).to.not.be.ok();
+			expect(listenerB.called).to.not.be.ok();
+		});
+
+		it('removes listener when passed an event map', function () {
+			var listener = sinon.spy();
+
+			L.DomEvent.on(el, 'click', listener);
+			L.DomEvent.off(el, {'click': listener});
+
+			happen.click(el);
+
+			expect(listener.called).to.not.be.ok();
+		});
+
 		it('is chainable', function () {
 			var res = L.DomEvent.off(el, 'click', function () {});
 
