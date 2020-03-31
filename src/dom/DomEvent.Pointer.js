@@ -1,5 +1,4 @@
 import * as DomEvent from './DomEvent';
-import * as Util from '../core/Util';
 import * as Browser from '../core/Browser';
 
 /*
@@ -50,14 +49,14 @@ export function removePointerListener(obj, type, id) {
 }
 
 function _addPointerStart(obj, handler, id) {
-	var onDown = Util.bind(function (e) {
+	var onDown = function (e) {
 		// IE10 specific: MsTouch needs preventDefault. See #2000
 		if (e.MSPOINTER_TYPE_TOUCH && e.pointerType === e.MSPOINTER_TYPE_TOUCH) {
 			DomEvent.preventDefault(e);
 		}
 
 		_handlePointer(e, handler);
-	});
+	};
 
 	obj['_leaflet_touchstart' + id] = onDown;
 	obj.addEventListener(POINTER_DOWN, onDown, false);
