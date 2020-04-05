@@ -36,6 +36,9 @@ export var TapHold = Handler.extend({
 	},
 
 	_onDown: function (e) {
+		if ('pointerType' in e && e.pointerType === (e.MSPOINTER_TYPE_MOUSE || 'mouse')) {
+			return; // workaround #7058
+		}
 		clearTimeout(this._holdTimeout);
 		if (e.touches.length !== 1) { return; }
 
@@ -47,8 +50,10 @@ export var TapHold = Handler.extend({
 			if (!this._isTapValid()) { return; }
 
 			// prevent simulated mouse events https://w3c.github.io/touch-events/#mouse-events
-			DomEvent.on(document, 'touchend', DomEvent.preventDefault);
-			DomEvent.on(document, 'touchend touchcancel', this._cancelClickPrevent);
+			// Note: direct use of addEventListener is temporary workaround for #7029/3
+			document.addEventListener('touchend', DomEvent.preventDefault, false);
+			document.addEventListener('touchend', this._cancelClickPrevent, false);
+			document.addEventListener('touchcancel', this._cancelClickPrevent, false);
 			this._simulateEvent('contextmenu', first);
 		}, this), tapHoldDelay);
 
@@ -57,8 +62,9 @@ export var TapHold = Handler.extend({
 	},
 
 	_cancelClickPrevent: function cancelClickPrevent() {
-		DomEvent.off(document, 'touchend', DomEvent.preventDefault);
-		DomEvent.off(document, 'touchend touchcancel', cancelClickPrevent);
+		document.removeEventListener('touchend', DomEvent.preventDefault, false);
+		document.removeEventListener('touchend', cancelClickPrevent, false);
+		document.removeEventListener('touchcancel', cancelClickPrevent, false);
 	},
 
 	_cancel: function () {
