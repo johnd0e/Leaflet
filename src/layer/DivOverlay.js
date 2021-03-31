@@ -61,6 +61,24 @@ export var DivOverlay = Layer.extend({
 		return this;
 	},
 
+	// @method toggle(layer?: Layer): this
+	// Opens or closes the overlay bound to layer depending on its current state.
+	// Argument may be omitted only for overlay bound to layer.
+	// Alternative to `layer.togglePopup()`/`.toggleTooltip()`.
+	toggle: function (layer, target) {
+		if (this._map) {
+			this.close();
+		} else {
+			layer = arguments.length ? layer : this._source;
+			var latlng = this._prepareOpen(layer, target);
+			this.setLatLng(latlng);
+
+			// open the overlay on the map
+			this.openOn(layer._map);
+		}
+		return this;
+	},
+
 	onAdd: function (map) {
 		this._zoomAnimated = map._zoomAnimated;
 
