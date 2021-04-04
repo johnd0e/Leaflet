@@ -357,14 +357,14 @@ Layer.include({
 	// the layer as the first argument and should return a `String` or `HTMLElement`.
 	bindPopup: function (content, options) {
 		this._popup = this._initOverlay(Popup, this._popup, content, options);
-		if (!this._popupHandlersAdded) {
-			this.on({
+		if (!this._popupHandlers) {
+			this._popupHandlers = {
 				click: this._openPopup,
 				keypress: this._onKeyPress,
 				remove: this.closePopup,
 				move: this._movePopup
-			});
-			this._popupHandlersAdded = true;
+			};
+			this.on(this._popupHandlers);
 		}
 
 		return this;
@@ -373,14 +373,9 @@ Layer.include({
 	// @method unbindPopup(): this
 	// Removes the popup previously bound with `bindPopup`.
 	unbindPopup: function () {
-		if (this._popup) {
-			this.off({
-				click: this._openPopup,
-				keypress: this._onKeyPress,
-				remove: this.closePopup,
-				move: this._movePopup
-			});
-			this._popupHandlersAdded = false;
+		if (this._popup && this._popupHandlers) {
+			this.off(this._popupHandlers);
+			this._popupHandlers = null;
 			this._popup = null;
 		}
 		return this;
