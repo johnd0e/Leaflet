@@ -126,6 +126,22 @@ export var Tooltip = DivOverlay.extend({
 		return events;
 	},
 
+	_bind: function (layer) {
+		layer._tooltip = this;
+		layer._initTooltipInteractions();
+
+		if (this.options.permanent && layer._map && layer._map.hasLayer(layer)) {
+			this._open(layer);
+		}
+	},
+
+	_unbind: function (layer) {
+		// if (this === layer._tooltip) {...
+		layer._initTooltipInteractions(true);
+		layer.closeTooltip();
+		layer._tooltip = null;
+	},
+
 	_initLayout: function () {
 		var prefix = 'leaflet-tooltip',
 		    className = prefix + ' ' + (this.options.className || '') + ' leaflet-zoom-' + (this._zoomAnimated ? 'animated' : 'hide');
@@ -264,12 +280,8 @@ Layer.include({
 	// necessary event listeners. If a `Function` is passed it will receive
 	// the layer as the first argument and should return a `String` or `HTMLElement`.
 	bindTooltip: function (content, options) {
-		this._tooltip = this._initOverlay(Tooltip, this._tooltip, content, options);
-		this._initTooltipInteractions();
-
-		if (this._tooltip.options.permanent && this._map && this._map.hasLayer(this)) {
-			this.openTooltip();
-		}
+		this._initOverlay(Tooltip, this._tooltip, content, options)
+		  .bindTo(this);
 
 		return this;
 	},
@@ -278,9 +290,7 @@ Layer.include({
 	// Removes the tooltip previously bound with `bindTooltip`.
 	unbindTooltip: function () {
 		if (this._tooltip) {
-			this._initTooltipInteractions(true);
-			this.closeTooltip();
-			this._tooltip = null;
+			this._tooltip.unbind(this);
 		}
 		return this;
 	},

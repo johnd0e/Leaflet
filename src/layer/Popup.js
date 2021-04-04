@@ -172,6 +172,29 @@ export var Popup = DivOverlay.extend({
 		return events;
 	},
 
+	_bind: function (layer) {
+		layer._popup = this;
+
+		if (!layer._popupHandlers) {
+			layer._popupHandlers = {
+				click: layer._openPopup,
+				keypress: layer._onKeyPress,
+				remove: layer.closePopup,
+				move: layer._movePopup
+			};
+			layer.on(layer._popupHandlers);
+		}
+	},
+
+	_unbind: function (layer) {
+		// if (this === layer._popup) {...
+		if (layer._popupHandlers) {
+			layer.off(layer._popupHandlers);
+			layer._popupHandlers = null;
+			layer._popup = null;
+		}
+	},
+
 	_initLayout: function () {
 		var prefix = 'leaflet-popup',
 		    container = this._container = DomUtil.create('div',
@@ -356,16 +379,8 @@ Layer.include({
 	// necessary event listeners. If a `Function` is passed it will receive
 	// the layer as the first argument and should return a `String` or `HTMLElement`.
 	bindPopup: function (content, options) {
-		this._popup = this._initOverlay(Popup, this._popup, content, options);
-		if (!this._popupHandlers) {
-			this._popupHandlers = {
-				click: this._openPopup,
-				keypress: this._onKeyPress,
-				remove: this.closePopup,
-				move: this._movePopup
-			};
-			this.on(this._popupHandlers);
-		}
+		this._initOverlay(Popup, this._popup, content, options)
+		  .bindTo(this);
 
 		return this;
 	},
@@ -373,10 +388,8 @@ Layer.include({
 	// @method unbindPopup(): this
 	// Removes the popup previously bound with `bindPopup`.
 	unbindPopup: function () {
-		if (this._popup && this._popupHandlers) {
-			this.off(this._popupHandlers);
-			this._popupHandlers = null;
-			this._popup = null;
+		if (this._popup) {
+			this._popup.unbind(this);
 		}
 		return this;
 	},

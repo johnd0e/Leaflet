@@ -79,6 +79,23 @@ export var DivOverlay = Layer.extend({
 		return this;
 	},
 
+	// @method bindTo(layer: Layer): this
+	// Binds the overlay to the specified layer and sets up the
+	// necessary event listeners.
+	bindTo: function (layer) {
+		this._source = layer;
+		this._bind(layer);
+		return this;
+	},
+
+	// @method unbind(layer?: Layer): this
+	// Unbinds (previously bound) popup from specified layer.
+	unbind: function (layer) {
+		layer = arguments.length ? layer : this._source;
+		this._unbind(layer);
+		return this;
+	},
+
 	onAdd: function (map) {
 		this._zoomAnimated = map._zoomAnimated;
 
@@ -290,7 +307,6 @@ Map.include({
 		return overlay;
 	}
 });
-
 
 Layer.include({
 	_initOverlay: function (OverlayClass, old, content, options) {
